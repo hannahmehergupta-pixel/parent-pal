@@ -7,6 +7,8 @@ export interface PlanInput {
   timelineYears: number;
   goalType: GoalType;
   inflationRate: number; // yearly percentage, e.g. 6%
+  motherIncome: number;
+  fatherIncome: number;
 }
 
 export interface Recommendation {
@@ -27,5 +29,9 @@ export interface PlanOutput {
   timelineYears: number;
   goalType: GoalType;
   inflationRate: number;
+  motherIncome: number;
+  fatherIncome: number;
+  motherShare: number;
+  fatherShare: number;
   recommendations: Recommendation[];
 }

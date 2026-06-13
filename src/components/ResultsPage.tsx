@@ -10,6 +10,8 @@ interface ResultsPageProps {
   targetYear: number;
   goalType: GoalType;
   inflationRate: number;
+  motherIncome: number;
+  fatherIncome: number;
   onStartOver: () => void;
 }
 
@@ -19,6 +21,8 @@ export default function ResultsPage({
   targetYear,
   goalType,
   inflationRate,
+  motherIncome,
+  fatherIncome,
   onStartOver
 }: ResultsPageProps) {
   const currentYear = new Date().getFullYear();
@@ -31,7 +35,9 @@ export default function ResultsPage({
     targetYear,
     timelineYears,
     goalType,
-    inflationRate
+    inflationRate,
+    motherIncome,
+    fatherIncome
   });
 
   // Human-friendly Indian Currency Formatter
@@ -115,6 +121,69 @@ export default function ResultsPage({
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-50 border border-primary-200 text-primary-800">
               <span className="text-primary-600 font-medium font-semibold">Inflation Premium:</span>
               <span className="font-extrabold">{formatINR(plan.adjustedTargetAmount - plan.targetAmount)} added</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Parents' Contribution Split Section */}
+      <div id="parental-split-card" className="mb-10 bg-gradient-to-br from-[#fcfaf7] to-[#f4f1ec] border border-stone-250/70 p-6 sm:p-8 rounded-3xl shadow-sm relative overflow-hidden">
+        {/* Absolute design accents */}
+        <div className="absolute right-0 top-0 -translate-y-8 translate-x-8 w-24 h-24 rounded-full bg-primary-150/20 blur-xl pointer-events-none" />
+        
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+          <div className="md:max-w-md">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-primary-700 bg-primary-50 px-2.5 py-0.5 border border-primary-200/50 rounded-md font-bold mb-3 inline-block">
+              Parental Contribution Split
+            </span>
+            <h3 className="text-lg font-bold font-display text-stone-900 tracking-tight leading-snug">
+              Income-Proportional Installment Shares
+            </h3>
+            <p className="text-xs text-stone-500 mt-2 leading-relaxed font-sans">
+              Based on your custom relative income distribution, we have automatically divided the aggregate monthly SIP installments fairly so that neither parent bears a disproportionate financial burden.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-semibold text-stone-550 border-t border-stone-200/60 pt-4 font-sans">
+              <div>
+                Mother's Income: <span className="font-mono text-stone-900 font-bold">{formatINR(plan.motherIncome)}</span>
+              </div>
+              <div className="h-3 w-[1px] bg-stone-350" />
+              <div>
+                Father's Income: <span className="font-mono text-stone-900 font-bold">{formatINR(plan.fatherIncome)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full md:max-w-xs shrink-0 flex flex-col gap-3.5">
+            {/* Mother Card */}
+            <div className="bg-white border border-stone-200/80 p-4 rounded-2xl shadow-xs relative flex items-center justify-between">
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary-550 rounded-s-2xl" />
+              <div className="pl-2">
+                <p className="text-[10px] uppercase font-mono tracking-wider font-bold text-primary-600">Mother's Installment</p>
+                <p className="text-lg font-mono font-extrabold text-stone-850 mt-0.5">
+                  {formatINR(plan.motherShare)} <span className="text-xs font-sans font-normal text-stone-500">/mo</span>
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-mono font-extrabold text-primary-750 bg-primary-50 border border-primary-150 px-2 py-0.5 rounded-lg">
+                  {plan.motherIncome + plan.fatherIncome > 0 ? Math.round((plan.motherIncome / (plan.motherIncome + plan.fatherIncome)) * 100) : 50}% share
+                </span>
+              </div>
+            </div>
+
+            {/* Father Card */}
+            <div className="bg-white border border-stone-200/80 p-4 rounded-2xl shadow-xs relative flex items-center justify-between">
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-indigo-555 rounded-s-2xl" />
+              <div className="pl-2">
+                <p className="text-[10px] uppercase font-mono tracking-wider font-bold text-indigo-600">Father's Installment</p>
+                <p className="text-lg font-mono font-extrabold text-stone-850 mt-0.5">
+                  {formatINR(plan.fatherShare)} <span className="text-xs font-sans font-normal text-stone-500">/mo</span>
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-mono font-extrabold text-indigo-755 bg-indigo-50 border border-indigo-150 px-2 py-0.5 rounded-lg">
+                  {plan.motherIncome + plan.fatherIncome > 0 ? 100 - Math.round((plan.motherIncome / (plan.motherIncome + plan.fatherIncome)) * 100) : 50}% share
+                </span>
+              </div>
             </div>
           </div>
         </div>

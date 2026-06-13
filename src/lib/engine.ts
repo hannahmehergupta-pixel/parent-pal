@@ -122,6 +122,17 @@ export function generatePlan(input: PlanInput): PlanOutput {
     };
   }
 
+  const totalIncome = (input.motherIncome || 0) + (input.fatherIncome || 0);
+  let motherShare = 0;
+  let fatherShare = 0;
+  if (totalIncome > 0) {
+    motherShare = Math.round((monthly * (input.motherIncome || 0)) / totalIncome);
+    fatherShare = monthly - motherShare;
+  } else {
+    motherShare = Math.round(monthly / 2);
+    fatherShare = monthly - motherShare;
+  }
+
   return {
     monthly,
     targetAmount: input.targetAmount,
@@ -130,6 +141,10 @@ export function generatePlan(input: PlanInput): PlanOutput {
     timelineYears: years,
     goalType: input.goalType,
     inflationRate: input.inflationRate,
+    motherIncome: input.motherIncome || 0,
+    fatherIncome: input.fatherIncome || 0,
+    motherShare,
+    fatherShare,
     recommendations: [equityRec, safeRec, hedgeRec]
   };
 }

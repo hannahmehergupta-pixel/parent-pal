@@ -11,6 +11,8 @@ interface PlanFormProps {
     targetYear: number;
     goalType: GoalType;
     inflationRate: number;
+    motherIncome: number;
+    fatherIncome: number;
   }) => void;
   onBackToHome: () => void;
 }
@@ -18,7 +20,7 @@ interface PlanFormProps {
 export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
   const currentYear = new Date().getFullYear();
 
-  // Step state representing the 5 focused slides
+  // Step state representing the 6 focused slides
   const [step, setStep] = useState(1);
   
   // Step 1: Child's age
@@ -35,6 +37,10 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
 
   // Step 5: Inflation rate slider
   const [inflationRate, setInflationRate] = useState(6); // default to 6% per annum (standard in India)
+
+  // Step 6: Parents' monthly income
+  const [motherIncome, setMotherIncome] = useState(80000);
+  const [fatherIncome, setFatherIncome] = useState(120000);
 
   // Compute dynamic dropdown range for Step 4: from (currentYear + 1) to (currentYear + (21 - childAge))
   const minYear = currentYear + 1;
@@ -53,7 +59,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
   const adjustedTargetAmount = Math.ceil(targetAmount * Math.pow(1 + inflationRate / 100, timelineYears));
 
   const handleNext = () => {
-    if (step < 5) {
+    if (step < 6) {
       setStep(prev => prev + 1);
     } else {
       if (targetAmount >= 50000) {
@@ -62,7 +68,9 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
           targetAmount,
           targetYear: activeYear,
           goalType,
-          inflationRate
+          inflationRate,
+          motherIncome,
+          fatherIncome
         });
       }
     }
@@ -86,7 +94,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
   };
 
   const presets = [100000, 500000, 1000000, 2500000, 5000000];
-  const progressPercentage = (step / 5) * 100;
+  const progressPercentage = (step / 6) * 100;
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 py-10 md:py-16 text-stone-850">
@@ -101,7 +109,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
           {step === 1 ? 'Home' : `Go to Step ${step - 1}`}
         </button>
         <span className="text-xs text-stone-450 font-mono tracking-wider font-semibold">
-          STEP {step} OF 5
+          STEP {step} OF 6
         </span>
       </div>
 
@@ -422,6 +430,145 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
               </div>
             </motion.div>
           )}
+
+          {step === 6 && (
+            <motion.div
+              key="step-parents-income"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
+              className="w-full"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Coins className="w-5 h-5 text-primary-600 animate-pulse" />
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-stone-900">
+                  Parents' monthly income
+                </h2>
+              </div>
+              <p className="text-sm text-stone-500 mb-8 leading-relaxed font-sans">
+                State your approximate household incomes. We will map your respective contributions proportionally so investment installments are split fairly.
+              </p>
+
+              {/* Two Column Layout for parents' income */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+                {/* Mother's Column */}
+                <Card className="p-5 bg-white border border-stone-200 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-primary-500" />
+                  <div>
+                    <label htmlFor="mother-income-input" className="text-[10px] font-mono font-bold tracking-wider text-stone-400 block mb-2">
+                      MOTHER'S MONTHLY INCOME
+                    </label>
+                    <div className="relative rounded-xl overflow-hidden shadow-inner bg-stone-50/70 border border-stone-200/80 flex items-center px-3 py-2.5 mb-3">
+                      <span className="text-sm font-bold text-stone-400 mr-1">₹</span>
+                      <input
+                        id="mother-income-input"
+                        type="number"
+                        min={0}
+                        step={10000}
+                        value={motherIncome}
+                        onChange={(e) => setMotherIncome(Math.max(0, Number(e.target.value)))}
+                        className="w-full bg-transparent border-none text-base font-mono font-bold focus:outline-none text-stone-900"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Slider
+                      id="mother-income-slider"
+                      min={0}
+                      max={500000}
+                      step={5000}
+                      value={motherIncome}
+                      onChange={setMotherIncome}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[9px] font-mono text-stone-450 mt-1 font-bold">
+                      <span>₹0</span>
+                      <span>₹5L+</span>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Father's Column */}
+                <Card className="p-5 bg-white border border-stone-200 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+                  <div>
+                    <label htmlFor="father-income-input" className="text-[10px] font-mono font-bold tracking-wider text-stone-400 block mb-2">
+                      FATHER'S MONTHLY INCOME
+                    </label>
+                    <div className="relative rounded-xl overflow-hidden shadow-inner bg-stone-50/70 border border-stone-200/80 flex items-center px-3 py-2.5 mb-3">
+                      <span className="text-sm font-bold text-stone-400 mr-1">₹</span>
+                      <input
+                        id="father-income-input"
+                        type="number"
+                        min={0}
+                        step={10000}
+                        value={fatherIncome}
+                        onChange={(e) => setFatherIncome(Math.max(0, Number(e.target.value)))}
+                        className="w-full bg-transparent border-none text-base font-mono font-bold focus:outline-none text-stone-900"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Slider
+                      id="father-income-slider"
+                      min={0}
+                      max={500000}
+                      step={5000}
+                      value={fatherIncome}
+                      onChange={setFatherIncome}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[9px] font-mono text-stone-450 mt-1 font-bold">
+                      <span>₹0</span>
+                      <span>₹5L+</span>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Real-time Dynamic Installment split breakdown preview */}
+              {(() => {
+                const annualRate = 0.08;
+                const r = annualRate / 12;
+                const n = Math.round(timelineYears * 12);
+                const power = n > 0 ? Math.pow(1 + r, n) : 1;
+                const calculatedMonthly = n > 0 ? Math.ceil((adjustedTargetAmount * r) / (power - 1)) : adjustedTargetAmount;
+                const monthlyInstallment = Math.max(1, calculatedMonthly);
+
+                const totalParentIncome = motherIncome + fatherIncome;
+                let mPct = 50;
+                let fPct = 50;
+                if (totalParentIncome > 0) {
+                  mPct = Math.round((motherIncome / totalParentIncome) * 100);
+                  fPct = 100 - mPct;
+                }
+                const mShare = Math.round((monthlyInstallment * mPct) / 100);
+                const fShare = monthlyInstallment - mShare;
+
+                return (
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 font-sans shadow-sm">
+                    <span className="text-[10px] font-mono tracking-widest text-stone-450 uppercase font-bold block mb-2">
+                      ESTIMATED MONTHLY INSTALLMENT SPLIT
+                    </span>
+                    <div className="text-xs font-medium text-stone-605 leading-relaxed">
+                      With your custom split of combined household incomes, the dynamic installment burden maps as follows based on a total required of <strong className="text-stone-900 font-extrabold">{formatINR(monthlyInstallment)}</strong>:
+                      <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-stone-200 text-stone-800">
+                        <div>
+                          <p className="text-[10px] font-mono text-primary-600 font-bold uppercase tracking-wider">Mother's installment ({mPct}%)</p>
+                          <p className="text-base font-extrabold text-stone-900 font-mono mt-0.5">{formatINR(mShare)} <span className="text-[11px] font-normal text-stone-500">/mo</span></p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-mono text-indigo-600 font-bold uppercase tracking-wider">Father's installment ({fPct}%)</p>
+                          <p className="text-base font-extrabold text-stone-900 font-mono mt-0.5">{formatINR(fShare)} <span className="text-[11px] font-normal text-stone-500">/mo</span></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 
@@ -449,7 +596,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
           disabled={step === 3 && targetAmount < 50000}
           className="bg-primary-600 hover:bg-primary-700 hover:shadow-md text-white transition-all font-bold px-7"
         >
-          {step === 5 ? 'Generate Strategy Plan' : 'Continue'}
+          {step === 6 ? 'Generate Strategy Plan' : 'Continue'}
           <ArrowRight className="w-4 h-4 ml-1.5" />
         </Button>
       </div>
