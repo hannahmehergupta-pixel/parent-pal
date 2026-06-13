@@ -1,0 +1,6 @@
+{
+  "name": "KidVault",
+  "description": "Secure your child's financial future in 2 minutes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
