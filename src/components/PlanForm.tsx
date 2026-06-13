@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button, Card, Slider, Select, Progress } from './UI';
-import { GoalType } from '../types';
-import { ArrowLeft, ArrowRight, Stars, Sparkles, Landmark, Coins, GraduationCap, ShieldAlert, Briefcase, Percent } from 'lucide-react';
+import { GoalType, SubscriptionPlan } from '../types';
+import { ArrowLeft, ArrowRight, Stars, Sparkles, Landmark, Coins, GraduationCap, ShieldAlert, Briefcase, Percent, User, Users, Crown, Check } from 'lucide-react';
 
 interface PlanFormProps {
   onSubmit: (data: {
@@ -13,6 +13,7 @@ interface PlanFormProps {
     inflationRate: number;
     motherIncome: number;
     fatherIncome: number;
+    subscriptionPlan?: SubscriptionPlan;
   }) => void;
   onBackToHome: () => void;
 }
@@ -20,25 +21,28 @@ interface PlanFormProps {
 export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
   const currentYear = new Date().getFullYear();
 
-  // Step state representing the 6 focused slides
+  // Step state representing the 7 focused slides
   const [step, setStep] = useState(1);
+
+  // Step 1: Subscription Tier Choice
+  const [subscriptionPlan, setSubscriptionPlan] = useState<SubscriptionPlan>('Family Pro');
   
-  // Step 1: Child's age
+  // Step 2: Child's age
   const [childAge, setChildAge] = useState(5); 
 
-  // Step 2: Goal selection
+  // Step 3: Goal selection
   const [goalType, setGoalType] = useState<GoalType>('Education');
 
-  // Step 3: Target amount
+  // Step 4: Target amount
   const [targetAmount, setTargetAmount] = useState(1000000); 
 
-  // Step 4: Timeline year
+  // Step 5: Timeline year
   const [targetYear, setTargetYear] = useState(currentYear + 13);
 
-  // Step 5: Inflation rate slider
+  // Step 6: Inflation rate slider
   const [inflationRate, setInflationRate] = useState(6); // default to 6% per annum (standard in India)
 
-  // Step 6: Parents' monthly income
+  // Step 7: Parents' monthly income
   const [motherIncome, setMotherIncome] = useState(80000);
   const [fatherIncome, setFatherIncome] = useState(120000);
 
@@ -59,7 +63,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
   const adjustedTargetAmount = Math.ceil(targetAmount * Math.pow(1 + inflationRate / 100, timelineYears));
 
   const handleNext = () => {
-    if (step < 6) {
+    if (step < 7) {
       setStep(prev => prev + 1);
     } else {
       if (targetAmount >= 50000) {
@@ -70,7 +74,8 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
           goalType,
           inflationRate,
           motherIncome,
-          fatherIncome
+          fatherIncome,
+          subscriptionPlan
         });
       }
     }
@@ -94,7 +99,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
   };
 
   const presets = [100000, 500000, 1000000, 2500000, 5000000];
-  const progressPercentage = (step / 6) * 100;
+  const progressPercentage = (step / 7) * 100;
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 py-10 md:py-16 text-stone-850">
@@ -109,7 +114,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
           {step === 1 ? 'Home' : `Go to Step ${step - 1}`}
         </button>
         <span className="text-xs text-stone-450 font-mono tracking-wider font-semibold">
-          STEP {step} OF 6
+          STEP {step} OF 7
         </span>
       </div>
 
@@ -119,6 +124,118 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
       <div className="min-h-[440px] flex flex-col">
         <AnimatePresence mode="wait">
           {step === 1 && (
+            <motion.div
+              key="step-subscription"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
+              className="w-full flex-grow flex flex-col justify-start"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Crown className="w-5 h-5 text-amber-500 animate-pulse" />
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-stone-900">
+                  Choose subscription plan
+                </h2>
+              </div>
+              <p className="text-sm text-stone-500 mb-6 leading-relaxed font-sans">
+                Select a tier to begin financial mapping. Each plan safeguards a specific scale of family accounts and child goals.
+              </p>
+
+              <div className="flex flex-col gap-4">
+                {/* Starter Plan */}
+                <button
+                  id="subscription-plan-starter"
+                  type="button"
+                  onClick={() => setSubscriptionPlan('Starter')}
+                  className={`flex items-start gap-4 p-5 rounded-2xl border text-left transition-all duration-200 relative ${
+                    subscriptionPlan === 'Starter'
+                      ? 'bg-[#faf8f5] border-primary-500 text-primary-950 shadow-sm scale-[1.01]'
+                      : 'bg-white border-stone-200/90 text-stone-700 hover:bg-stone-50/50'
+                  }`}
+                >
+                  <div className={`p-3 rounded-xl shrink-0 ${subscriptionPlan === 'Starter' ? 'bg-primary-100/80 text-primary-700' : 'bg-stone-100 text-stone-500'}`}>
+                    <User className="w-6 h-6" />
+                  </div>
+                  <div className="flex-grow">
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                      <span className="text-sm font-semibold text-stone-900 font-sans">🌱 Starter Plan</span>
+                      <span className="text-sm font-mono font-bold text-stone-900">₹149<span className="text-[10px] font-normal text-stone-500 font-sans"> / month</span></span>
+                    </div>
+                    <span className="block text-xs text-stone-500 leading-relaxed mb-2 font-sans">
+                      Perfect for starting small with pristine tracking, curated wealth schedules, and safe allocation modules.
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded">
+                      <Check className="w-3 h-3 text-stone-600" /> 1 Child account
+                    </span>
+                  </div>
+                </button>
+
+                {/* Family Pro Plan */}
+                <button
+                  id="subscription-plan-family-pro"
+                  type="button"
+                  onClick={() => setSubscriptionPlan('Family Pro')}
+                  className={`flex items-start gap-4 p-5 rounded-2xl border text-left transition-all duration-200 relative ${
+                    subscriptionPlan === 'Family Pro'
+                      ? 'bg-[#faf8f5] border-primary-500 text-primary-950 shadow-sm scale-[1.01]'
+                      : 'bg-white border-stone-200/90 text-stone-700 hover:bg-stone-50/50'
+                  }`}
+                >
+                  <div className={`p-3 rounded-xl shrink-0 ${subscriptionPlan === 'Family Pro' ? 'bg-yellow-100 text-yellow-700' : 'bg-stone-100 text-stone-500'}`}>
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div className="flex-grow">
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                      <span className="text-sm font-semibold text-stone-900 font-sans flex items-center gap-1.5">
+                        👨‍👩‍👧‍👦 Family Pro
+                        <span className="text-[9px] uppercase font-mono tracking-wider font-extrabold text-amber-700 bg-amber-50 border border-amber-200/50 px-1.5 py-0.5 rounded-full select-none">Popular</span>
+                      </span>
+                      <span className="text-sm font-mono font-bold text-stone-900">₹349<span className="text-[10px] font-normal text-stone-500 font-sans"> / month</span></span>
+                    </div>
+                    <span className="block text-xs text-stone-500 leading-relaxed mb-2 font-sans">
+                      Tailored support for multi-child pathways, custom milestone risk matrices, and income split modules.
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-700 bg-amber-50 border border-amber-100/50 px-2.5 py-0.5 rounded">
+                      <Check className="w-3 h-3 text-amber-600" /> Up to 3 Children accounts
+                    </span>
+                  </div>
+                </button>
+
+                {/* Elite Plan */}
+                <button
+                  id="subscription-plan-elite"
+                  type="button"
+                  onClick={() => setSubscriptionPlan('Elite')}
+                  className={`flex items-start gap-4 p-5 rounded-2xl border text-left transition-all duration-200 relative ${
+                    subscriptionPlan === 'Elite'
+                      ? 'bg-[#faf8f5] border-primary-500 text-primary-950 shadow-sm scale-[1.01]'
+                      : 'bg-white border-stone-200/90 text-stone-700 hover:bg-stone-50/50'
+                  }`}
+                >
+                  <div className={`p-3 rounded-xl shrink-0 ${subscriptionPlan === 'Elite' ? 'bg-indigo-100 text-indigo-700' : 'bg-stone-100 text-stone-500'}`}>
+                    <Crown className="w-6 h-6" />
+                  </div>
+                  <div className="flex-grow">
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                      <span className="text-sm font-semibold text-stone-900 font-sans flex items-center gap-1.5">
+                        👑 Elite Tier
+                      </span>
+                      <span className="text-sm font-mono font-bold text-stone-900">₹799<span className="text-[10px] font-normal text-stone-500 font-sans"> / month</span></span>
+                    </div>
+                    <span className="block text-xs text-stone-500 leading-relaxed mb-2 font-sans">
+                      Unlimited premium access. Concierge advisory parameters, dynamic hyper-inflation safeguards, and complex multi-parent burden balances.
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-100/50 px-2.5 py-0.5 rounded">
+                      <Check className="w-3 h-3 text-indigo-650" /> Max 5 Children accounts
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 2 && (
             <motion.div
               key="step-age"
               initial={{ opacity: 0, y: 10 }}
@@ -162,7 +279,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
             </motion.div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <motion.div
               key="step-goal-type"
               initial={{ opacity: 0, y: 10 }}
@@ -252,7 +369,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
             </motion.div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <motion.div
               key="step-goal-amount"
               initial={{ opacity: 0, y: 10 }}
@@ -322,7 +439,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
             </motion.div>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <motion.div
               key="step-timeline"
               initial={{ opacity: 0, y: 10 }}
@@ -373,7 +490,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
             </motion.div>
           )}
 
-          {step === 5 && (
+          {step === 6 && (
             <motion.div
               key="step-inflation-adjustment"
               initial={{ opacity: 0, y: 10 }}
@@ -431,7 +548,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
             </motion.div>
           )}
 
-          {step === 6 && (
+          {step === 7 && (
             <motion.div
               key="step-parents-income"
               initial={{ opacity: 0, y: 10 }}
@@ -593,10 +710,10 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
           variant="primary"
           size="md"
           onClick={handleNext}
-          disabled={step === 3 && targetAmount < 50000}
+          disabled={step === 4 && targetAmount < 50000}
           className="bg-primary-600 hover:bg-primary-700 hover:shadow-md text-white transition-all font-bold px-7"
         >
-          {step === 6 ? 'Generate Strategy Plan' : 'Continue'}
+          {step === 7 ? 'Generate Strategy Plan' : 'Continue'}
           <ArrowRight className="w-4 h-4 ml-1.5" />
         </Button>
       </div>

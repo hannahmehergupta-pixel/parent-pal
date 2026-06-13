@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import LandingPage from './components/LandingPage';
 import PlanForm from './components/PlanForm';
 import ResultsPage from './components/ResultsPage';
-import { GoalType } from './types';
+import { GoalType, SubscriptionPlan } from './types';
 import { Calendar, Heart } from 'lucide-react';
 
 export default function App() {
@@ -20,6 +20,7 @@ export default function App() {
     inflationRate: number;
     motherIncome: number;
     fatherIncome: number;
+    subscriptionPlan?: SubscriptionPlan;
   }>({
     childAge: 5,
     targetAmount: 1000000,
@@ -27,7 +28,8 @@ export default function App() {
     goalType: 'Education',
     inflationRate: 6, // default to 6% standard inflation in India
     motherIncome: 80000,
-    fatherIncome: 120000
+    fatherIncome: 120000,
+    subscriptionPlan: 'Family Pro'
   });
 
   // Safe client-side history navigation wrappers supporting the sandboxed iframe environment
@@ -59,11 +61,12 @@ export default function App() {
     inflationRate: number;
     motherIncome: number;
     fatherIncome: number;
+    subscriptionPlan?: SubscriptionPlan;
   }) => {
     setFormData(data);
     setRoute('results');
     try {
-      const query = `?age=${data.childAge}&amount=${data.targetAmount}&year=${data.targetYear}&goal=${encodeURIComponent(data.goalType)}&inflation=${data.inflationRate}&mother=${data.motherIncome}&father=${data.fatherIncome}`;
+      const query = `?age=${data.childAge}&amount=${data.targetAmount}&year=${data.targetYear}&goal=${encodeURIComponent(data.goalType)}&inflation=${data.inflationRate}&mother=${data.motherIncome}&father=${data.fatherIncome}&plan=${encodeURIComponent(data.subscriptionPlan || 'Family Pro')}`;
       window.history.pushState(null, '', `/results${query}`);
     } catch (e) {
       console.warn('Navigation state sync bypassed due to sandbox constraint:', e);
@@ -85,6 +88,7 @@ export default function App() {
         const inflation = Number(searchParams.get('inflation')) ?? 6;
         const mother = Number(searchParams.get('mother')) || 80000;
         const father = Number(searchParams.get('father')) || 120000;
+        const subPlan = (searchParams.get('plan') || 'Family Pro') as SubscriptionPlan;
 
         let parsedGoal: GoalType = 'Education';
         if (goalParam === 'Education' || goalParam === 'Medical Buffer' || goalParam === 'Future Business') {
@@ -98,7 +102,8 @@ export default function App() {
           goalType: parsedGoal,
           inflationRate: isNaN(inflation) ? 6 : inflation,
           motherIncome: mother,
-          fatherIncome: father
+          fatherIncome: father,
+          subscriptionPlan: subPlan
         });
         setRoute('results');
       } else if (currentPath === '/plan') {
@@ -127,6 +132,7 @@ export default function App() {
           const inflation = Number(searchParams.get('inflation')) ?? 6;
           const mother = Number(searchParams.get('mother')) || 80000;
           const father = Number(searchParams.get('father')) || 120000;
+          const subPlan = (searchParams.get('plan') || 'Family Pro') as SubscriptionPlan;
 
           let parsedGoal: GoalType = 'Education';
           if (goalParam === 'Education' || goalParam === 'Medical Buffer' || goalParam === 'Future Business') {
@@ -140,7 +146,8 @@ export default function App() {
             goalType: parsedGoal,
             inflationRate: isNaN(inflation) ? 6 : inflation,
             motherIncome: mother,
-            fatherIncome: father
+            fatherIncome: father,
+            subscriptionPlan: subPlan
           });
           setRoute('results');
         } else if (currentPath === '/plan') {
@@ -222,6 +229,7 @@ export default function App() {
             inflationRate={formData.inflationRate}
             motherIncome={formData.motherIncome}
             fatherIncome={formData.fatherIncome}
+            subscriptionPlan={formData.subscriptionPlan}
             onStartOver={navigateToPlan}
           />
         )}

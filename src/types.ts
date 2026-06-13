@@ -1,4 +1,5 @@
 export type GoalType = 'Education' | 'Medical Buffer' | 'Future Business';
+export type SubscriptionPlan = 'Starter' | 'Family Pro' | 'Elite';
 
 export interface PlanInput {
   childAge: number;
@@ -9,6 +10,7 @@ export interface PlanInput {
   inflationRate: number; // yearly percentage, e.g. 6%
   motherIncome: number;
   fatherIncome: number;
+  subscriptionPlan?: SubscriptionPlan;
 }
 
 export interface Recommendation {
@@ -33,5 +35,6 @@ export interface PlanOutput {
   fatherIncome: number;
   motherShare: number;
   fatherShare: number;
+  subscriptionPlan?: SubscriptionPlan;
   recommendations: Recommendation[];
 }

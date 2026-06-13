@@ -1,6 +1,6 @@
 import React from 'react';
 import { generatePlan } from '../lib/engine';
-import { GoalType } from '../types';
+import { GoalType, SubscriptionPlan } from '../types';
 import { Card, Button } from './UI';
 import { ArrowRight, ArrowLeft, Heart, Sparkles, TrendingUp, HelpCircle, ShieldCheck, Flame } from 'lucide-react';
 
@@ -12,6 +12,7 @@ interface ResultsPageProps {
   inflationRate: number;
   motherIncome: number;
   fatherIncome: number;
+  subscriptionPlan?: SubscriptionPlan;
   onStartOver: () => void;
 }
 
@@ -23,6 +24,7 @@ export default function ResultsPage({
   inflationRate,
   motherIncome,
   fatherIncome,
+  subscriptionPlan,
   onStartOver
 }: ResultsPageProps) {
   const currentYear = new Date().getFullYear();
@@ -87,11 +89,18 @@ export default function ResultsPage({
           <div className="absolute right-0 bottom-0 translate-y-12 translate-x-12 w-48 h-48 rounded-full bg-primary-100/35 blur-3xl pointer-events-none -z-10" />
           <div className="absolute left-1/3 top-0 -translate-y-6 w-32 h-32 rounded-full bg-indigo-200/20 blur-2xl pointer-events-none -z-10" />
 
-          {/* Dynamic Goal Type Badge */}
+          {/* Dynamic Goal Type & Active Plan Badge */}
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-4">
             <span className={`text-xs font-bold px-3.5 py-1 rounded-full border ${goalMeta.color}`}>
               {goalMeta.label}
             </span>
+            {subscriptionPlan && (
+              <span className="text-xs font-bold px-3.5 py-1 rounded-full border border-amber-200 text-amber-800 bg-amber-50">
+                {subscriptionPlan === 'Starter' && '🌱 Starter Plan (₹149/mo)'}
+                {subscriptionPlan === 'Family Pro' && '👨‍👩‍👧‍👦 Family Pro Plan (₹349/mo)'}
+                {subscriptionPlan === 'Elite' && '👑 Elite Plan (₹799/mo)'}
+              </span>
+            )}
             {inflationRate > 0 && (
               <span className="text-[10px] uppercase font-mono tracking-wider text-rose-750 bg-rose-50 border border-rose-150 px-3 py-1 rounded-full font-bold inline-flex items-center gap-1">
                 <Flame className="w-3 h-3 text-rose-500 fill-rose-100" />
@@ -122,6 +131,12 @@ export default function ResultsPage({
               <span className="text-primary-600 font-medium font-semibold">Inflation Premium:</span>
               <span className="font-extrabold">{formatINR(plan.adjustedTargetAmount - plan.targetAmount)} added</span>
             </div>
+            {subscriptionPlan && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
+                <span className="text-amber-700 font-semibold">Subscribed:</span>
+                <span className="font-extrabold">🚀 {subscriptionPlan}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -145,6 +145,7 @@ export function generatePlan(input: PlanInput): PlanOutput {
     fatherIncome: input.fatherIncome || 0,
     motherShare,
     fatherShare,
+    subscriptionPlan: input.subscriptionPlan,
     recommendations: [equityRec, safeRec, hedgeRec]
   };
 }
