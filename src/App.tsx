@@ -2,21 +2,28 @@ import React, { useState, useEffect } from 'react';
 import LandingPage from './components/LandingPage';
 import PlanForm from './components/PlanForm';
 import ResultsPage from './components/ResultsPage';
-import { ShieldCheck, Calendar, Heart } from 'lucide-react';
+import { GoalType } from './types';
+import { Calendar, Heart } from 'lucide-react';
 
 export default function App() {
   const currentYear = new Date().getFullYear();
 
-  // Internal routing states matching requested / /plan and /results paths
+  // Route state
   const [route, setRoute] = useState<'home' | 'plan' | 'results'>('home');
+  
+  // Extended form data matching new goal types & inflation parameters
   const [formData, setFormData] = useState<{
     childAge: number;
     targetAmount: number;
     targetYear: number;
+    goalType: GoalType;
+    inflationRate: number;
   }>({
     childAge: 5,
     targetAmount: 1000000,
     targetYear: currentYear + 13,
+    goalType: 'Education',
+    inflationRate: 6 // default to 6% standard inflation in India
   });
 
   // Safe client-side history navigation wrappers supporting the sandboxed iframe environment
@@ -40,11 +47,17 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-  const navigateToResults = (data: { childAge: number; targetAmount: number; targetYear: number }) => {
+  const navigateToResults = (data: { 
+    childAge: number; 
+    targetAmount: number; 
+    targetYear: number;
+    goalType: GoalType;
+    inflationRate: number;
+  }) => {
     setFormData(data);
     setRoute('results');
     try {
-      const query = `?age=${data.childAge}&amount=${data.targetAmount}&year=${data.targetYear}`;
+      const query = `?age=${data.childAge}&amount=${data.targetAmount}&year=${data.targetYear}&goal=${encodeURIComponent(data.goalType)}&inflation=${data.inflationRate}`;
       window.history.pushState(null, '', `/results${query}`);
     } catch (e) {
       console.warn('Navigation state sync bypassed due to sandbox constraint:', e);
@@ -62,11 +75,20 @@ export default function App() {
         const age = Number(searchParams.get('age')) || 5;
         const amount = Number(searchParams.get('amount')) || 1000000;
         const year = Number(searchParams.get('year')) || (currentYear + 13);
+        const goalParam = searchParams.get('goal') as GoalType;
+        const inflation = Number(searchParams.get('inflation')) ?? 6;
+
+        let parsedGoal: GoalType = 'Education';
+        if (goalParam === 'Education' || goalParam === 'Medical Buffer' || goalParam === 'Future Business') {
+          parsedGoal = goalParam;
+        }
 
         setFormData({
           childAge: age,
           targetAmount: amount,
-          targetYear: year
+          targetYear: year,
+          goalType: parsedGoal,
+          inflationRate: isNaN(inflation) ? 6 : inflation
         });
         setRoute('results');
       } else if (currentPath === '/plan') {
@@ -91,11 +113,20 @@ export default function App() {
           const age = Number(searchParams.get('age')) || 5;
           const amount = Number(searchParams.get('amount')) || 1000000;
           const year = Number(searchParams.get('year')) || (currentYear + 13);
+          const goalParam = searchParams.get('goal') as GoalType;
+          const inflation = Number(searchParams.get('inflation')) ?? 6;
+
+          let parsedGoal: GoalType = 'Education';
+          if (goalParam === 'Education' || goalParam === 'Medical Buffer' || goalParam === 'Future Business') {
+            parsedGoal = goalParam;
+          }
 
           setFormData({
             childAge: age,
             targetAmount: amount,
-            targetYear: year
+            targetYear: year,
+            goalType: parsedGoal,
+            inflationRate: isNaN(inflation) ? 6 : inflation
           });
           setRoute('results');
         } else if (currentPath === '/plan') {
@@ -115,7 +146,7 @@ export default function App() {
   }, [currentYear]);
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#fdfbf9] text-stone-800">
+    <div className="min-h-screen flex flex-col justify-between bg-[#fdfbf9] text-stone-850">
       {/* Sticky Header Nav with Warm Shadows */}
       <header id="main-app-header" className="sticky top-0 z-50 bg-[#fdfbf9]/90 backdrop-blur-md border-b border-stone-200/50 px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -133,7 +164,7 @@ export default function App() {
                 Parent Pal
               </span>
               <span className="text-[10px] text-stone-500 font-medium tracking-normal mt-0.5">
-                Helping parents plan a secure future for their child
+                Securing big dreams for little ones, one smart step at a time
               </span>
             </div>
           </div>
@@ -173,6 +204,8 @@ export default function App() {
             childAge={formData.childAge}
             targetAmount={formData.targetAmount}
             targetYear={formData.targetYear}
+            goalType={formData.goalType}
+            inflationRate={formData.inflationRate}
             onStartOver={navigateToPlan}
           />
         )}

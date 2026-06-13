@@ -18,7 +18,12 @@ export function monthlyRequired(targetAmount: number, years: number): number {
 
 export function generatePlan(input: PlanInput): PlanOutput {
   const years = input.timelineYears;
-  const monthly = monthlyRequired(input.targetAmount, years);
+  
+  // Adjusted target amount based on compound inflation rate
+  const rate = input.inflationRate / 100;
+  const adjustedTargetAmount = Math.ceil(input.targetAmount * Math.pow(1 + rate, years));
+  
+  const monthly = monthlyRequired(adjustedTargetAmount, years);
 
   // 1. Allocation split by timeline
   let equityPct = 0;
@@ -39,18 +44,22 @@ export function generatePlan(input: PlanInput): PlanOutput {
     hedgePct = 0.30;
   }
 
-  // 2. Instrument selection by timeline
+  // 2. Instrument selection based on Goal Type and timeline
 
+  // Let's customize recommendation text and names briefly depending on the GoalType for higher quality!
+  const isEducation = input.goalType === 'Education';
+  const isMedical = input.goalType === 'Medical Buffer';
+  
   // Equity Slot: equity-sip if >5yr, else index-sip
   let equityRec: Recommendation;
   if (years > 5) {
     equityRec = {
-      emoji: "📈",
-      name: "Equity Mutual Fund SIP",
+      emoji: isEducation ? "🎓" : isMedical ? "🏥" : "💼",
+      name: isEducation ? "Education Focused Equity Mutual Fund" : isMedical ? "Healthcare Equity Mutual Fund" : "Business Capital Equity SIP",
       category: "Equity",
       returns: "12% Est. Return",
       lockIn: "None",
-      why: "High growth potential targeting premium diversified equity shares over long-term compounding cycles.",
+      why: `High-conviction diversified equity mutual fund customized for premium long-term compounding toward child's ${input.goalType.toLowerCase()} targets.`,
       monthlyAmount: Math.ceil(monthly * equityPct)
     };
   } else {
@@ -60,7 +69,7 @@ export function generatePlan(input: PlanInput): PlanOutput {
       category: "Equity",
       returns: "11% Est. Return",
       lockIn: "None",
-      why: "Low-cost passive option shadowing benchmark indices, reducing active fund manager risks in shorter horizons.",
+      why: `Low-cost benchmark tracker reducing active management friction over shorter investment horizons toward child's ${input.goalType.toLowerCase()} milestones.`,
       monthlyAmount: Math.ceil(monthly * equityPct)
     };
   }
@@ -74,7 +83,7 @@ export function generatePlan(input: PlanInput): PlanOutput {
       category: "Safe",
       returns: "7.1% Fixed Return",
       lockIn: "15 Years",
-      why: "100% sovereign-guaranteed and completely tax-exempt growth, proving a solid anchor for multi-year milestones.",
+      why: "100% sovereign safe capital preservation with tax-exempt growth, providing a risk-free baseline cover.",
       monthlyAmount: Math.ceil(monthly * safePct)
     };
   } else {
@@ -84,7 +93,7 @@ export function generatePlan(input: PlanInput): PlanOutput {
       category: "Safe",
       returns: "6.5% Fixed Return",
       lockIn: "1 to 5 Years",
-      why: "Sovereign-grade bank stability securing structured monthly interest outputs without index exposures.",
+      why: "Sovereign-secured bank-guaranteed returns providing guaranteed payout certainty without stock market exposure.",
       monthlyAmount: Math.ceil(monthly * safePct)
     };
   }
@@ -98,7 +107,7 @@ export function generatePlan(input: PlanInput): PlanOutput {
       category: "Hedge",
       returns: "8.0% Est. Return",
       lockIn: "8 Years",
-      why: "Provides an outstanding hedge buffer with 2.5% guaranteed annually plus historical gold appreciation.",
+      why: `Outstanding commodity fallback protection with 2.5% simple annual interest payouts plus premium domestic spot gold price hedge.`,
       monthlyAmount: Math.ceil(monthly * hedgePct)
     };
   } else {
@@ -108,7 +117,7 @@ export function generatePlan(input: PlanInput): PlanOutput {
       category: "Hedge",
       returns: "6.5% Fixed Return",
       lockIn: "1 to 5 Years",
-      why: "Low-risk reserve deposit buffer safe routing hedge slots away from mid-term liquidity locks.",
+      why: "Highly liquid savings buffer shielding capital against short-term market corrections and liquidity locks.",
       monthlyAmount: Math.ceil(monthly * hedgePct)
     };
   }
@@ -116,8 +125,11 @@ export function generatePlan(input: PlanInput): PlanOutput {
   return {
     monthly,
     targetAmount: input.targetAmount,
+    adjustedTargetAmount,
     targetYear: input.targetYear,
     timelineYears: years,
+    goalType: input.goalType,
+    inflationRate: input.inflationRate,
     recommendations: [equityRec, safeRec, hedgeRec]
   };
 }
