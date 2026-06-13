@@ -171,3 +171,39 @@ export function Progress({ id, value, className = '' }: ProgressProps) {
     </div>
   );
 }
+
+// ========================== SELECT COMPONENT ==========================
+interface SelectProps {
+  children: React.ReactNode;
+  className?: string;
+  id?: string;
+  value: string | number;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+}
+
+export function Select({
+  children,
+  className = '',
+  id,
+  value,
+  onChange,
+}: SelectProps) {
+  return (
+    <div className="relative w-full">
+      <select
+        id={id}
+        value={value}
+        onChange={onChange}
+        className={`w-full appearance-none bg-white border border-stone-200 rounded-2xl px-5 py-3.5 pr-10 text-sm font-semibold text-stone-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-600 transition-all cursor-pointer ${className}`}
+      >
+        {children}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+

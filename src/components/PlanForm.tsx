@@ -1,46 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Button, Card, CardContent, Slider, Progress } from './UI';
-import { ArrowLeft, ArrowRight, Check, GraduationCap, HeartPulse, Trophy, Landmark } from 'lucide-react';
-import { GoalType } from '../types';
+import { Button, Card, Slider, Select, Progress } from './UI';
+import { ArrowLeft, ArrowRight, Stars, Sparkles, Landmark, Coins } from 'lucide-react';
 
 interface PlanFormProps {
   onSubmit: (data: {
     childAge: number;
-    goalType: GoalType;
     targetAmount: number;
-    timelineYears: number;
+    targetYear: number;
   }) => void;
   onBackToHome: () => void;
 }
 
 export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
+  const currentYear = new Date().getFullYear();
+
+  // 3-step state variables
   const [step, setStep] = useState(1);
-  const [childAge, setChildAge] = useState(5);
-  const [goalType, setGoalType] = useState<GoalType | null>(null);
-  const [targetAmount, setTargetAmount] = useState(1000000); // Standard ₹10 Lakhs
-  const [timelineYears, setTimelineYears] = useState(13); // Default 18 - 5 = 13
+  const [childAge, setChildAge] = useState(5); // Step 1: Slider 0 to 21
+  const [targetAmount, setTargetAmount] = useState(1000000); // Step 2: ₹ number input, min 50000
+  
+  // Step 3 Dropdown state initialized to currentYear + 10 as default, clamped below
+  const [targetYear, setTargetYear] = useState(currentYear + 13); 
 
-  // Clamp timeline if childAge changes
-  useEffect(() => {
-    const maxTimeline = Math.max(1, 18 - childAge);
-    if (timelineYears > maxTimeline) {
-      setTimelineYears(maxTimeline);
-    }
-  }, [childAge, timelineYears]);
+  // Compute dynamic dropdown range for Step 3: from (currentYear + 1) to (currentYear + (21 - childAge))
+  const minYear = currentYear + 1;
+  const maxYear = Math.max(currentYear + 1, currentYear + (21 - childAge));
 
-  const maxTimelineAllowed = Math.max(1, 18 - childAge);
+  // Generate continuous years array
+  const yearsOptions: number[] = [];
+  for (let y = minYear; y <= maxYear; y++) {
+    yearsOptions.push(y);
+  }
+
+  // Ensure current targetYear selection stays within bounds if childAge is updated
+  const activeYear = targetYear > maxYear || targetYear < minYear ? maxYear : targetYear;
 
   const handleNext = () => {
-    if (step < 4) {
+    if (step < 3) {
       setStep(prev => prev + 1);
     } else {
-      if (goalType) {
+      if (targetAmount >= 50000) {
         onSubmit({
           childAge,
-          goalType,
           targetAmount,
-          timelineYears
+          targetYear: activeYear
         });
       }
     }
@@ -54,15 +58,7 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
     }
   };
 
-  const selectGoal = (type: GoalType) => {
-    setGoalType(type);
-    // Double advance with subtle timeout for Typeform-like auto-advance
-    setTimeout(() => {
-      setStep(3);
-    }, 250);
-  };
-
-  // Helper values for Indian numbering system
+  // Human-friendly currency format in Indian style
   const formatINR = (value: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -71,69 +67,69 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
     }).format(value);
   };
 
-  // Preset buttons for child target values
   const presets = [100000, 500000, 1000000, 2500000, 5000000];
-
-  const progressPercentage = (step / 4) * 100;
+  const progressPercentage = (step / 3) * 100;
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4 py-8">
-      {/* Upper Navigation Indicator & Back Button */}
-      <div className="flex items-center justify-between mb-8">
+    <div className="w-full max-w-xl mx-auto px-4 py-10 md:py-16 text-stone-800">
+      {/* Top Header Indicators */}
+      <div className="flex items-center justify-between mb-6">
         <button
-          id="step-back-button"
+          id="step-navigation-back"
           onClick={handleBack}
-          className="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 font-medium transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-900 font-semibold transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          {step === 1 ? 'Home' : 'Back'}
+          <ArrowLeft className="w-4 h-4 text-stone-400" />
+          {step === 1 ? 'Home' : 'Previous Step'}
         </button>
-        <span className="text-xs text-neutral-400 font-mono tracking-wider">
-          STEP {step} OF 4
+        <span className="text-xs text-stone-400 font-mono tracking-wider font-semibold">
+          QUESTION {step} OF 3
         </span>
       </div>
 
-      {/* Progress display */}
-      <Progress id="form-progress-bar" value={progressPercentage} className="mb-8" />
+      {/* Modern Progress Line */}
+      <Progress id="planning-wizard-progress" value={progressPercentage} className="mb-10" />
 
-      {/* Steps Frame containing Animating Card */}
-      <div className="relative overflow-hidden min-h-[360px]">
+      <div className="min-h-[380px] flex flex-col">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
+              key="step-age"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
               className="w-full"
             >
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-neutral-900 tracking-tight mb-2">
-                How old is your child?
-              </h2>
-              <p className="text-sm text-neutral-500 mb-8">
-                This helps us estimate the legal eligibility for tax-free compounding plans like SSY.
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-5 h-5 text-primary-600" />
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-stone-900">
+                  Select child's current age
+                </h2>
+              </div>
+              <p className="text-sm text-stone-500 mb-8 leading-relaxed">
+                We use this to customize maximum tax exemptions and compute compound timeline durations up to adulthood (age 21).
               </p>
 
-              <Card className="p-8 bg-slate-50 border border-slate-200">
-                <div className="flex flex-col items-center py-6">
-                  {/* Age text bubble */}
-                  <div className="bg-primary-600 text-white rounded-3xl px-8 py-4 font-mono text-4xl font-bold tracking-tight shadow-lg shadow-primary-600/15 mb-8">
+              <Card className="p-8 sm:p-10 bg-stone-50/70 border border-stone-200">
+                <div className="flex flex-col items-center py-4">
+                  {/* Digital Age Badge */}
+                  <div className="bg-primary-600 text-white rounded-3xl px-8 py-3.5 font-mono text-4xl font-bold tracking-tight shadow-md shadow-primary-600/25 mb-8">
                     {childAge} {childAge === 1 ? 'year old' : 'years old'}
                   </div>
 
                   <Slider
-                    id="child-age-slider"
+                    id="child-age-slider-input"
                     min={0}
-                    max={17}
+                    max={21}
                     value={childAge}
                     onChange={setChildAge}
-                    className="w-full max-w-md"
+                    className="w-full max-w-sm"
                   />
-                  
-                  <div className="flex items-center justify-between w-full max-w-md mt-1 px-1">
-                    <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400">Infant</span>
-                    <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400">Teenager</span>
+
+                  <div className="flex items-center justify-between w-full max-w-sm mt-2 px-1">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-stone-400 font-bold">Newborn (0)</span>
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-stone-400 font-bold">Adult (21)</span>
                   </div>
                 </div>
               </Card>
@@ -142,233 +138,153 @@ export default function PlanForm({ onSubmit, onBackToHome }: PlanFormProps) {
 
           {step === 2 && (
             <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
+              key="step-savings"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
               className="w-full"
             >
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-neutral-900 tracking-tight mb-2">
-                What is your savings goal?
-              </h2>
-              <p className="text-sm text-neutral-500 mb-8">
-                Your investment mix and locking structures personalize based on your strategic priority.
+              <div className="flex items-center gap-2 mb-2">
+                <Coins className="w-5 h-5 text-primary-600" />
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-stone-900">
+                  How much do you want to save?
+                </h2>
+              </div>
+              <p className="text-sm text-stone-500 mb-8 leading-relaxed">
+                Set your desired final lumpsum corpus. A minimum threshold of ₹50,000 ensures maximum compound benefits.
               </p>
 
-              <div className="flex flex-col gap-4">
-                {/* Education */}
-                <button
-                  id="goal-education-btn"
-                  onClick={() => selectGoal('Education')}
-                  className={`flex items-start gap-4 p-5 rounded-3xl border text-left transition-all duration-200 cursor-pointer ${
-                    goalType === 'Education'
-                      ? 'border-primary-600 bg-primary-50/45 shadow-sm'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
-                  }`}
-                >
-                  <div className={`p-4 rounded-2xl ${goalType === 'Education' ? 'bg-primary-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
-                    <GraduationCap className="w-5 h-5" />
+              <Card className="p-8 bg-white border border-stone-200 shadow-sm mb-6">
+                <div className="flex flex-col gap-5">
+                  <label htmlFor="target-amount-rupee-input" className="text-xs font-mono font-bold uppercase tracking-wider text-stone-400">
+                    TARGET AMOUNT (INR)
+                  </label>
+                  <div className="relative rounded-2xl overflow-hidden shadow-inner bg-stone-50 border border-stone-200 flex items-center px-5 py-4">
+                    <span className="text-2xl font-bold font-sans text-stone-400 mr-2">₹</span>
+                    <input
+                      id="target-amount-rupee-input"
+                      type="number"
+                      min={50000}
+                      step={5000}
+                      value={targetAmount}
+                      onChange={(e) => setTargetAmount(Number(e.target.value))}
+                      className="w-full bg-transparent border-none text-2xl font-mono font-bold focus:outline-none text-stone-850"
+                    />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-slate-800">Higher Education</span>
-                      {goalType === 'Education' && <Check className="w-4 h-4 text-primary-600 font-bold" />}
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-1">For undergraduate or postgraduate fees, professional certifications, or studying abroad.</p>
-                  </div>
-                </button>
 
-                {/* Medical Buffer */}
-                <button
-                  id="goal-medical-btn"
-                  onClick={() => selectGoal('Medical Buffer')}
-                  className={`flex items-start gap-4 p-5 rounded-3xl border text-left transition-all duration-200 cursor-pointer ${
-                    goalType === 'Medical Buffer'
-                      ? 'border-primary-600 bg-primary-50/45 shadow-sm'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
-                  }`}
-                >
-                  <div className={`p-4 rounded-2xl ${goalType === 'Medical Buffer' ? 'bg-primary-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
-                    <HeartPulse className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-slate-800">Medical Buffer</span>
-                      {goalType === 'Medical Buffer' && <Check className="w-4 h-4 text-primary-600 font-bold" />}
+                  {targetAmount < 50000 && (
+                    <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-100 text-xs text-amber-700 leading-normal font-semibold">
+                      * Please enter a target savings amount of at least ₹50,000.
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">An emergency medical co-pay shield or general specialized healthcare backup.</p>
-                  </div>
-                </button>
+                  )}
 
-                {/* Milestone */}
-                <button
-                  id="goal-milestone-btn"
-                  onClick={() => selectGoal('Milestone')}
-                  className={`flex items-start gap-4 p-5 rounded-3xl border text-left transition-all duration-200 cursor-pointer ${
-                    goalType === 'Milestone'
-                      ? 'border-primary-600 bg-primary-50/45 shadow-sm'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
-                  }`}
-                >
-                  <div className={`p-4 rounded-2xl ${goalType === 'Milestone' ? 'bg-primary-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
-                    <Trophy className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-slate-800">Milestone Events</span>
-                      {goalType === 'Milestone' && <Check className="w-4 h-4 text-primary-600 font-bold" />}
+                  {/* Quick Select Presets */}
+                  <div className="pt-2">
+                    <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase block mb-3 font-semibold">PRESETS</span>
+                    <div className="flex flex-wrap gap-2.5">
+                      {presets.map((preset) => (
+                        <button
+                          key={preset}
+                          id={`preset-cap-${preset}`}
+                          type="button"
+                          onClick={() => setTargetAmount(preset)}
+                          className={`text-xs px-4 py-2 rounded-full border transition-all duration-150 font-bold ${
+                            targetAmount === preset
+                              ? 'bg-primary-50 border-primary-300 text-primary-700'
+                              : 'bg-stone-50 border-stone-250 text-stone-600 hover:bg-stone-100'
+                          }`}
+                        >
+                          {formatINR(preset)}
+                        </button>
+                      ))}
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">Seed capital for their first business, buying a vehicle, or wedding expenses.</p>
                   </div>
-                </button>
-              </div>
+                </div>
+              </Card>
             </motion.div>
           )}
 
           {step === 3 && (
             <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
+              key="step-timeline"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
               className="w-full"
             >
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-neutral-900 tracking-tight mb-2">
-                What is your target savings corpus?
-              </h2>
-              <p className="text-sm text-neutral-500 mb-8">
-                Enter your desired final amount. Capped at a minimum value of ₹50,000.
-              </p>
-
-              <Card className="p-8 bg-white border border-slate-200 mb-6">
-                <div className="flex flex-col gap-4">
-                  <div className="relative rounded-2xl overflow-hidden shadow-inner bg-slate-50 border border-slate-200 flex items-center px-5 py-4">
-                    <span className="text-xl font-bold font-sans text-slate-400 mr-2">₹</span>
-                    <input
-                      id="target-amount-input"
-                      type="number"
-                      min={50000}
-                      step={5000}
-                      value={targetAmount}
-                      onChange={(e) => setTargetAmount(Math.max(0, Number(e.target.value)))}
-                      className="w-full bg-transparent border-none text-2xl font-mono font-bold focus:outline-none text-slate-800"
-                    />
-                  </div>
-
-                  {targetAmount < 50000 && (
-                    <p className="text-xs text-amber-600 font-medium">
-                      * Capped at minimum baseline ₹50,000 for standard Indian plans.
-                    </p>
-                  )}
-
-                  {/* Preset Quick Selection Buttons */}
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {presets.map((preset) => (
-                      <button
-                        key={preset}
-                        id={`preset-amt-${preset}`}
-                        type="button"
-                        onClick={() => setTargetAmount(preset)}
-                        className={`text-xs px-4 py-2.5 rounded-full border transition-all duration-150 font-semibold ${
-                          targetAmount === preset
-                            ? 'bg-primary-50 border-primary-200 text-primary-700'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        {formatINR(preset)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-
-              <div className="bg-slate-50 border border-slate-200 p-5 rounded-3xl flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                  <Landmark className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-800">Compounding Power Tip</h4>
-                  <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                    Even saving a conservative target like ₹5 Lakhs over a teen's timeline can yield surprising safety cushions due to compounding interest.
-                  </p>
-                </div>
+              <div className="flex items-center gap-2 mb-2">
+                <Landmark className="w-5 h-5 text-primary-600" />
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-stone-900">
+                  By which year?
+                </h2>
               </div>
-            </motion.div>
-          )}
-
-          {step === 4 && (
-            <motion.div
-              key="step4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="w-full"
-            >
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-neutral-900 tracking-tight mb-2">
-                What is your timeline?
-              </h2>
-              <p className="text-sm text-neutral-500 mb-8">
-                Capped dynamically until child reaching adult majority target age (18 minus age {childAge}).
+              <p className="text-sm text-stone-500 mb-8 leading-relaxed">
+                Choose the target future calendar year when your child reaches maturity. Capped up to age 21 ({21 - childAge} years max timeline remaining).
               </p>
 
-              <Card className="p-8 bg-slate-50 border border-slate-200">
-                <div className="flex flex-col items-center py-6">
-                  {/* Timeline years text bubble */}
-                  <div className="bg-slate-900 text-white rounded-3xl px-8 py-4 font-mono text-4xl font-bold tracking-tight shadow-lg mb-8">
-                    {timelineYears} {timelineYears === 1 ? 'Year' : 'Years'}
-                  </div>
+              <Card className="p-8 bg-stone-50 border border-stone-200 mb-8">
+                <div className="flex flex-col gap-4">
+                  <label htmlFor="target-year-select-dropdown" className="text-xs font-mono font-bold uppercase tracking-wider text-stone-400">
+                    TARGET SAVINGS YEAR
+                  </label>
+                  
+                  <Select
+                    id="target-year-select-dropdown"
+                    value={activeYear}
+                    onChange={(e) => setTargetYear(Number(e.target.value))}
+                  >
+                    {yearsOptions.map((yearOpt) => {
+                      const diffYears = yearOpt - currentYear;
+                      return (
+                        <option key={yearOpt} value={yearOpt}>
+                          Year {yearOpt} ({diffYears} {diffYears === 1 ? 'year' : 'years'} away)
+                        </option>
+                      );
+                    })}
+                  </Select>
 
-                  <Slider
-                    id="timeline-years-slider"
-                    min={1}
-                    max={maxTimelineAllowed}
-                    value={timelineYears}
-                    onChange={setTimelineYears}
-                    className="w-full max-w-md"
-                  />
-
-                  <div className="flex items-center justify-between w-full max-w-md mt-1 px-1">
-                    <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400">1 Year</span>
-                    <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400">Max limit ({maxTimelineAllowed} yrs)</span>
+                  <div className="mt-4 p-4 rounded-2xl bg-white border border-stone-200/60 text-xs text-stone-500 flex items-start gap-2.5">
+                    <Stars className="w-4.5 h-4.5 text-primary-500 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-stone-700 block mb-0.5">Calculated Target Horizon</span>
+                      This sets your investment timeline to exactly <strong className="text-stone-800 font-semibold">{activeYear - currentYear} {activeYear - currentYear === 1 ? 'year' : 'years'}</strong>, aligning asset allocation percentages under automated compounding metrics.
+                    </div>
                   </div>
                 </div>
               </Card>
-
-              {maxTimelineAllowed <= 1 && (
-                <div className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-100 text-xs text-amber-700 leading-normal">
-                  Child is close to adulthood. Timeline is constrained to 1 year. Try adjusting child age on Step 1 if you wish to see wider compounding metrics.
-                </div>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Navigation Buttons Row at bottom */}
-      <div className="flex justify-end gap-3 mt-10 pt-6 border-t border-neutral-100">
-        {step > 1 && (
+      {/* Lower Navigation Controls */}
+      <div className="flex justify-between items-center mt-10 pt-6 border-t border-stone-200/60 font-sans">
+        {step > 1 ? (
           <Button
-            id="step-prev-navigation"
+            id="step-prev-cta"
             variant="outline"
             size="md"
-            onClick={() => setStep(prev => prev - 1)}
+            onClick={handleBack}
+            className="border-stone-200 hover:bg-stone-50 text-stone-650"
           >
             Back
           </Button>
+        ) : (
+          <div /> /* spacer */
         )}
-        
+
         <Button
-          id="step-next-navigation"
+          id="step-next-cta"
           variant="primary"
           size="md"
           onClick={handleNext}
-          disabled={step === 2 && !goalType || step === 3 && targetAmount < 50000}
+          disabled={step === 2 && targetAmount < 50000}
+          className="bg-primary-600 hover:bg-primary-700 hover:shadow-md text-white transition-all font-bold px-7"
         >
-          {step === 4 ? 'Formulate Vault Plan' : 'Continue'}
-          <ArrowRight className="w-4 h-4 ml-1" />
+          {step === 3 ? 'Generate Strategy Plan' : 'Continue'}
+          <ArrowRight className="w-4 h-4 ml-1.5" />
         </Button>
       </div>
     </div>

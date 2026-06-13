@@ -1,23 +1,24 @@
-export type GoalType = 'Education' | 'Medical Buffer' | 'Milestone';
-
 export interface PlanInput {
   childAge: number;
-  goalType: GoalType;
   targetAmount: number;
+  targetYear: number;
   timelineYears: number;
 }
 
-export interface Instrument {
-  id: string;
+export interface Recommendation {
+  emoji: string;
   name: string;
-  returnRate: number; // e.g. 12 for 12%
-  lockIn: string; // e.g. "None", "15 Years"
+  category: "Equity" | "Safe" | "Hedge";
+  returns: string;
+  lockIn: string;
   why: string;
-  isEstimated?: boolean;
+  monthlyAmount: number;
 }
 
 export interface PlanOutput {
-  monthlySavings: number;
-  goalSummary: string;
-  recommendations: Instrument[];
+  monthly: number;
+  targetAmount: number;
+  targetYear: number;
+  timelineYears: number;
+  recommendations: Recommendation[];
 }

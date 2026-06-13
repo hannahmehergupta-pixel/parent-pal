@@ -1,6 +1,6 @@
 {
-  "name": "KidVault",
-  "description": "Secure your child's financial future in 2 minutes.",
+  "name": "Parent Pal",
+  "description": "Know exactly how much to invest today for your child's tomorrow.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
